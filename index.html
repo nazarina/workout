@@ -36,7 +36,7 @@
 
     body {
       background-color: #eaf1f1;
-      /* Изящный фоновый узор из веточек и длинных листьев */
+      /* Фоновый узор из веточек и длинных листьев */
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Cpath fill='none' stroke='%238bb3a8' stroke-width='1.2' opacity='0.35' d='M -50,100 C 50,20 150,180 250,80 C 350,-20 450,120 450,120 M 150,180 C 130,130 90,120 70,140 C 50,160 80,180 150,180 M 150,180 C 180,140 220,130 230,160 C 240,190 200,200 150,180 M 250,80 C 230,20 190,20 180,50 C 170,80 210,90 250,80 M 250,80 C 290,40 320,50 320,80 C 320,110 280,100 250,80 M 50,300 C 150,220 250,380 350,280 C 450,180 550,320 550,320 M 250,380 C 230,330 190,320 170,340 C 150,360 180,380 250,380 M 250,380 C 280,340 320,330 330,360 C 340,390 300,400 250,380'/%3E%3C/svg%3E");
       color: var(--text-main);
       display: flex;
@@ -46,7 +46,7 @@
       overflow: hidden;
     }
 
-    /* Главный контейнер приложения — строго 1 экран */
+    /* Главный контейнер приложения */
     .app-container {
       width: 100%;
       max-width: 430px;
@@ -60,7 +60,6 @@
       flex-direction: column;
       overflow: hidden;
       box-shadow: 0 0 30px rgba(0,0,0,0.08);
-      /* Узор из веточек на фоне приложения */
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='600' viewBox='0 0 300 600'%3E%3Cg fill='none' stroke='%23709f93' stroke-width='1' opacity='0.22'%3E%3Cpath d='M -50,150 Q 100,50 200,250 T 400,350' /%3E%3Cpath d='M 200,250 C 140,200 80,240 120,280 C 160,320 200,280 200,250 Z' %3E%3C/path%3E%3Cpath d='M 100,100 C 60,60 20,100 60,130 C 100,160 120,120 100,100 Z' %3E%3C/path%3E%3Cpath d='M -20,400 Q 120,300 180,550' /%3E%3Cpath d='M 120,420 C 60,380 40,440 90,460 C 140,480 150,440 120,420 Z' %3E%3C/path%3E%3C/g%3E%3C/svg%3E");
     }
 
@@ -108,7 +107,7 @@
       padding: 16px 18px;
       margin-bottom: 12px;
       cursor: pointer;
-      transition: transform 0.15 ease, box-shadow 0.2s ease;
+      transition: transform 0.15s ease, box-shadow 0.2s ease;
       box-shadow: var(--card-shadow);
       border: 1px solid rgba(255, 255, 255, 0.6);
     }
@@ -247,10 +246,12 @@
 
     .date-picker-container input {
       width: 100%;
-      padding: 8px;
+      padding: 8px 12px;
       border-radius: 12px;
-      border: 1px solid #ccc;
+      border: 1px solid var(--accent-color);
       font-size: 0.9rem;
+      outline: none;
+      background: var(--white);
     }
 
     .chart-container {
@@ -258,17 +259,19 @@
       height: 220px;
       width: 100%;
       margin-bottom: 16px;
-      background: rgba(255, 255, 255, 0.7);
-      padding: 10px;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 12px;
       border-radius: 16px;
+      box-shadow: var(--card-shadow);
     }
 
     .total-time-card {
-      background: rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.85);
       border-radius: 16px;
       padding: 16px;
       text-align: center;
       margin-bottom: 16px;
+      box-shadow: var(--card-shadow);
     }
 
     .total-time-card h4 {
@@ -283,11 +286,12 @@
     }
 
     .motivation-box {
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.85);
       border-left: 4px solid var(--accent-color);
       border-radius: 0 12px 12px 0;
       padding: 12px;
       margin-top: auto;
+      box-shadow: var(--card-shadow);
     }
 
     .motivation-title {
@@ -490,10 +494,11 @@
   </div>
 
   <script>
-    // Данные и состояние
+    // Состояние приложения
     let currentWorkout = '';
     let timerInterval = null;
-    let secondsElapsed = 0;
+    let startTime = 0;
+    let accumulatedTime = 0;
     let isTimerRunning = false;
     let chartInstance = null;
     let selectedFilter = 'week';
@@ -541,24 +546,23 @@
       switchScreen('timer');
     }
 
-    // Таймер
+    // Управление таймером (фоновый режим через метки времени)
     function toggleTimer() {
       const timerBtn = document.getElementById('timer-btn');
       const finishBtn = document.getElementById('finish-btn');
 
       if (!isTimerRunning) {
         isTimerRunning = true;
+        startTime = Date.now();
         timerBtn.innerText = 'Пауза';
         timerBtn.style.background = '#dfd7f0';
         timerBtn.style.color = '#4a4a4a';
         finishBtn.style.display = 'block';
 
-        timerInterval = setInterval(() => {
-          secondsElapsed++;
-          updateTimerDisplay();
-        }, 1000);
+        timerInterval = setInterval(updateTimerDisplay, 200);
       } else {
         isTimerRunning = false;
+        accumulatedTime += Date.now() - startTime;
         clearInterval(timerInterval);
         timerBtn.innerText = 'Продолжить';
         timerBtn.style.background = 'var(--accent-color)';
@@ -569,7 +573,8 @@
     function resetTimer() {
       clearInterval(timerInterval);
       isTimerRunning = false;
-      secondsElapsed = 0;
+      accumulatedTime = 0;
+      startTime = 0;
       updateTimerDisplay();
       
       const timerBtn = document.getElementById('timer-btn');
@@ -579,9 +584,18 @@
       document.getElementById('finish-btn').style.display = 'none';
     }
 
+    function getElapsedSeconds() {
+      let totalMs = accumulatedTime;
+      if (isTimerRunning) {
+        totalMs += (Date.now() - startTime);
+      }
+      return Math.floor(totalMs / 1000);
+    }
+
     function updateTimerDisplay() {
-      const mins = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
-      const secs = (secondsElapsed % 60).toString().padStart(2, '0');
+      const totalSec = getElapsedSeconds();
+      const mins = Math.floor(totalSec / 60).toString().padStart(2, '0');
+      const secs = (totalSec % 60).toString().padStart(2, '0');
       document.getElementById('timer').innerText = `${mins}:${secs}`;
     }
 
@@ -592,22 +606,29 @@
 
     // Завершение тренировки
     function finishWorkout() {
+      const totalSec = getElapsedSeconds();
       clearInterval(timerInterval);
+      isTimerRunning = false;
       
-      const mins = Math.floor(secondsElapsed / 60);
-      const secs = secondsElapsed % 60;
+      const mins = Math.floor(totalSec / 60);
+      const secs = totalSec % 60;
       const durationStr = `${mins} мин ${secs} сек`;
       
-      // Сохранение в localStorage
+      // Форматирование даты в YYYY-MM-DD
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+
       saveWorkoutData({
         title: currentWorkout,
-        durationSeconds: secondsElapsed,
-        date: new Date().toISOString().split('T')[0]
+        durationSeconds: totalSec,
+        date: formattedDate
       });
 
-      // Заполнение модального окна
       document.getElementById('modal-workout-name').innerText = currentWorkout;
-      document.getElementById('modal-workout-date').innerText = new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+      document.getElementById('modal-workout-date').innerText = now.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
       document.getElementById('modal-workout-duration').innerText = durationStr;
       
       const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
@@ -622,7 +643,7 @@
       switchScreen('stats');
     }
 
-    // Хранилище данных
+    // Работа со статистикой
     function saveWorkoutData(session) {
       let history = JSON.parse(localStorage.getItem('workout_history') || '[]');
       history.push(session);
@@ -633,7 +654,6 @@
       return JSON.parse(localStorage.getItem('workout_history') || '[]');
     }
 
-    // Фильтрация и График
     function setFilter(type, btn) {
       selectedFilter = type;
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -644,10 +664,11 @@
         datePicker.style.display = 'block';
       } else {
         datePicker.style.display = 'none';
-        renderStats();
       }
+      renderStats();
     }
 
+    // Отрисовка графиков
     function renderStats() {
       const history = getWorkoutData();
       let labels = [];
@@ -656,47 +677,59 @@
 
       if (selectedFilter === 'week') {
         for (let i = 6; i >= 0; i--) {
-          const d = new Date();
+          const d = new Date(today);
           d.setDate(today.getDate() - i);
-          const dateStr = d.toISOString().split('T')[0];
-          labels.push(d.toLocaleDateString('ru-RU', { weekday: 'short' }));
+          
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          const dateStr = `${year}-${month}-${day}`;
+
+          const dayName = d.toLocaleDateString('ru-RU', { weekday: 'short' });
+          labels.push(dayName);
           
           const totalSec = history
             .filter(item => item.date === dateStr)
             .reduce((acc, curr) => acc + curr.durationSeconds, 0);
+          
           dataPoints.push(Math.round(totalSec / 60));
         }
       } else if (selectedFilter === 'month') {
-        for (let i = 29; i >= 0; i -= 3) {
-          const d = new Date();
+        for (let i = 29; i >= 0; i--) {
+          const d = new Date(today);
           d.setDate(today.getDate() - i);
-          const dateStr = d.toISOString().split('T')[0];
-          labels.push(d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'numeric' }));
+          
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          const dateStr = `${year}-${month}-${day}`;
+
+          labels.push(`${d.getDate()}`);
           
           const totalSec = history
             .filter(item => item.date === dateStr)
             .reduce((acc, curr) => acc + curr.durationSeconds, 0);
+          
           dataPoints.push(Math.round(totalSec / 60));
         }
       } else if (selectedFilter === 'custom') {
         const inputVal = document.getElementById('custom-date-input').value;
         if (inputVal) {
-          labels = [inputVal];
+          const d = new Date(inputVal + 'T00:00:00');
+          labels = [d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })];
+          
           const totalSec = history
             .filter(item => item.date === inputVal)
             .reduce((acc, curr) => acc + curr.durationSeconds, 0);
+          
           dataPoints = [Math.round(totalSec / 60)];
         }
       }
 
-      // Общее время
       const totalMinutes = dataPoints.reduce((a, b) => a + b, 0);
       document.getElementById('total-period-time').innerText = `${totalMinutes} мин`;
-
-      // Мотивационная фраза для экрана статистики
       document.getElementById('stats-motivation').innerText = quotes[Math.floor(Math.random() * quotes.length)];
 
-      // Рендер Chart.js
       const ctx = document.getElementById('statsChart').getContext('2d');
       if (chartInstance) chartInstance.destroy();
 
@@ -708,7 +741,7 @@
             label: 'Минуты',
             data: dataPoints,
             backgroundColor: '#5c8d89',
-            borderRadius: 8,
+            borderRadius: 6,
           }]
         },
         options: {
@@ -720,7 +753,7 @@
           scales: {
             y: {
               beginAtZero: true,
-              grid: { color: 'rgba(0,0,0,0.03)' },
+              grid: { color: 'rgba(0,0,0,0.04)' },
               ticks: { font: { size: 10 } }
             },
             x: {
@@ -734,7 +767,11 @@
 
     // Инициализация
     window.onload = () => {
-      document.getElementById('custom-date-input').value = new Date().toISOString().split('T')[0];
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      document.getElementById('custom-date-input').value = `${year}-${month}-${day}`;
     };
   </script>
 </body>
