@@ -10,12 +10,20 @@
     :root {
       --soft-pink: #f3fdfd;
       --soft-purple: #f3f0ff;
-      --accent-color: #008080;
-      --deep-accent: #800000;
-      --text-main: #4a4a4a;
+      --accent-color: #5c8d89;
+      --deep-accent: #2d4a43;
+      --text-main: #333333;
       --white: #ffffff;
-      --overlay-bg: rgba(255, 255, 255, 0.55);
-      --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+      --overlay-bg: rgba(255, 255, 255, 0.75);
+      --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+
+      /* Палитра карточек из макета */
+      --card-blue: #d8e5e5;
+      --card-green: #d1e2c4;
+      --card-purple: #dfd7f0;
+      --card-pink: #f7d6cb;
+      --card-yellow: #f8e5c8;
+      --card-sage: #c8d8d4;
     }
 
     * {
@@ -27,7 +35,9 @@
     }
 
     body {
-      background-color: var(--soft-pink);
+      background-color: #eaf1f1;
+      /* Изящный фоновый узор из веточек и длинных листьев */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Cpath fill='none' stroke='%238bb3a8' stroke-width='1.2' opacity='0.35' d='M -50,100 C 50,20 150,180 250,80 C 350,-20 450,120 450,120 M 150,180 C 130,130 90,120 70,140 C 50,160 80,180 150,180 M 150,180 C 180,140 220,130 230,160 C 240,190 200,200 150,180 M 250,80 C 230,20 190,20 180,50 C 170,80 210,90 250,80 M 250,80 C 290,40 320,50 320,80 C 320,110 280,100 250,80 M 50,300 C 150,220 250,380 350,280 C 450,180 550,320 550,320 M 250,380 C 230,330 190,320 170,340 C 150,360 180,380 250,380 M 250,380 C 280,340 320,330 330,360 C 340,390 300,400 250,380'/%3E%3C/svg%3E");
       color: var(--text-main);
       display: flex;
       justify-content: center;
@@ -42,21 +52,25 @@
       max-width: 430px;
       height: 100vh;
       height: 100dvh;
-      background: var(--white);
+      background: rgba(246, 249, 248, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       position: relative;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 0 30px rgba(0,0,0,0.1);
+      box-shadow: 0 0 30px rgba(0,0,0,0.08);
+      /* Узор из веточек на фоне приложения */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='600' viewBox='0 0 300 600'%3E%3Cg fill='none' stroke='%23709f93' stroke-width='1' opacity='0.22'%3E%3Cpath d='M -50,150 Q 100,50 200,250 T 400,350' /%3E%3Cpath d='M 200,250 C 140,200 80,240 120,280 C 160,320 200,280 200,250 Z' %3E%3C/path%3E%3Cpath d='M 100,100 C 60,60 20,100 60,130 C 100,160 120,120 100,100 Z' %3E%3C/path%3E%3Cpath d='M -20,400 Q 120,300 180,550' /%3E%3Cpath d='M 120,420 C 60,380 40,440 90,460 C 140,480 150,440 120,420 Z' %3E%3C/path%3E%3C/g%3E%3C/svg%3E");
     }
 
     /* Шапка */
     .header {
       padding: 16px;
       text-align: center;
-      background: var(--white);
+      background: rgba(255, 255, 255, 0.8);
       z-index: 10;
-      border-bottom: 1px solid rgba(0,0,0,0.03);
+      border-bottom: 1px solid rgba(0,0,0,0.04);
     }
 
     .header h1 {
@@ -81,22 +95,22 @@
 
     /* ЭКРАН 1: Выбор активности */
     .section-title {
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       font-weight: 600;
       color: var(--accent-color);
-      margin: 12px 0 8px 0;
+      margin: 14px 0 10px 4px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     .activity-card {
-      background: var(--soft-purple);
-      border-radius: 16px;
-      padding: 14px;
-      margin-bottom: 10px;
+      border-radius: 18px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
       cursor: pointer;
-      transition: transform 0.1s ease, box-shadow 0.2s ease;
+      transition: transform 0.15 ease, box-shadow 0.2s ease;
       box-shadow: var(--card-shadow);
+      border: 1px solid rgba(255, 255, 255, 0.6);
     }
 
     .activity-card:active {
@@ -104,19 +118,29 @@
     }
 
     .activity-card h3 {
-      font-size: 1rem;
-      color: var(--deep-accent);
-      margin-bottom: 4px;
+      font-size: 1.05rem;
+      color: #2c3e3a;
+      margin-bottom: 6px;
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
     }
 
     .activity-card p {
-      font-size: 0.8rem;
-      color: var(--text-main);
-      line-height: 1.3;
-      opacity: 0.85;
+      font-size: 0.82rem;
+      color: #4a5553;
+      line-height: 1.35;
+      opacity: 0.9;
     }
+
+    /* Цвета карточек с названиями активностей по макету */
+    .card-blue { background-color: var(--card-blue); }
+    .card-green { background-color: var(--card-green); }
+    .card-purple { background-color: var(--card-purple); }
+    .card-pink { background-color: var(--card-pink); }
+    .card-yellow { background-color: var(--card-yellow); }
+    .card-sage { background-color: var(--card-sage); }
 
     /* ЭКРАН 2: Активная тренировка */
     .workout-screen {
@@ -130,13 +154,13 @@
 
     .workout-overlay {
       background: var(--overlay-bg);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       width: 100%;
       border-radius: 24px;
       padding: 28px 20px;
       text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -174,7 +198,7 @@
       transition: all 0.2s ease;
       width: 100%;
       max-width: 240px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
 
     .btn-start {
@@ -183,17 +207,17 @@
     }
 
     .btn-stop {
-      background: var(--deep-accent);
+      background: #c86b6b;
       color: var(--white);
     }
 
     .btn-secondary {
-      background: var(--soft-purple);
+      background: var(--card-purple);
       color: var(--deep-accent);
       margin-top: 10px;
     }
 
-    /* Ниже: ЭКРАН 3 — Отчет и аналитика */
+    /* ЭКРАН 3 — Отчет и аналитика */
     .stats-header {
       display: flex;
       gap: 8px;
@@ -204,7 +228,7 @@
       flex: 1;
       padding: 8px;
       border: 1px solid var(--accent-color);
-      background: transparent;
+      background: rgba(255, 255, 255, 0.6);
       color: var(--accent-color);
       border-radius: 20px;
       font-size: 0.8rem;
@@ -234,10 +258,13 @@
       height: 220px;
       width: 100%;
       margin-bottom: 16px;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 10px;
+      border-radius: 16px;
     }
 
     .total-time-card {
-      background: var(--soft-pink);
+      background: rgba(255, 255, 255, 0.7);
       border-radius: 16px;
       padding: 16px;
       text-align: center;
@@ -256,7 +283,7 @@
     }
 
     .motivation-box {
-      background: var(--soft-purple);
+      background: rgba(255, 255, 255, 0.8);
       border-left: 4px solid var(--accent-color);
       border-radius: 0 12px 12px 0;
       padding: 12px;
@@ -282,7 +309,8 @@
       display: none;
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.4);
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(4px);
       z-index: 100;
       justify-content: center;
       align-items: center;
@@ -295,7 +323,7 @@
       padding: 24px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
     }
 
     .modal h2 {
@@ -306,9 +334,10 @@
     /* Нижняя навигация */
     .nav-bar {
       display: flex;
-      background: var(--white);
+      background: rgba(255, 255, 255, 0.9);
       border-top: 1px solid rgba(0,0,0,0.05);
       height: 60px;
+      z-index: 10;
     }
 
     .nav-item {
@@ -349,34 +378,34 @@
       
       <div class="section-title">Йога и мягкие практики</div>
 
-      <div class="activity-card" onclick="startWorkout('Хатха-йога', 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=800&auto=format&fit=crop')">
+      <div class="activity-card card-blue" onclick="startWorkout('Хатха-йога', 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=800&auto=format&fit=crop')">
         <h3>Хатха-йога <span>🧘‍♀️</span></h3>
         <p>Классическая практика: статическое удержание асан, дыхание и мягкая проработка всего тела.</p>
       </div>
 
-      <div class="activity-card" onclick="startWorkout('Виньяса-флоу', 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=800&auto=format&fit=crop')">
+      <div class="activity-card card-green" onclick="startWorkout('Виньяса-флоу', 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=800&auto=format&fit=crop')">
         <h3>Виньяса-флоу <span>🌊</span></h3>
         <p>Динамичная йога, где движения плавно связываются с дыханием в единый непрерывный поток.</p>
       </div>
 
-      <div class="activity-card" onclick="startWorkout('Инь-йога', 'https://images.unsplash.com/photo-1510894347048-471ea1f1006c?q=80&w=800&auto=format&fit=crop')">
+      <div class="activity-card card-purple" onclick="startWorkout('Инь-йога', 'https://images.unsplash.com/photo-1510894347048-471ea1f1006c?q=80&w=800&auto=format&fit=crop')">
         <h3>Инь-йога <span>🕯️</span></h3>
         <p>Пассивная расслабляющая практика с долгим удержанием поз для глубокой растяжки и связок.</p>
       </div>
 
-      <div class="activity-card" onclick="startWorkout('МФР и стретчинг', 'https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=800&auto=format&fit=crop')">
+      <div class="activity-card card-pink" onclick="startWorkout('МФР и стретчинг', 'https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=800&auto=format&fit=crop')">
         <h3>МФР и стретчинг <span>🌸</span></h3>
         <p>Миофасциальный релиз с роллом и мягкая растяжка для снятия зажимов и усталости.</p>
       </div>
 
       <div class="section-title">Уличные тренировки</div>
 
-      <div class="activity-card" onclick="startWorkout('Уличные тренажеры', 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=800&auto=format&fit=crop')">
+      <div class="activity-card card-sage" onclick="startWorkout('Уличные тренажеры', 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=800&auto=format&fit=crop')">
         <h3>Площадка с тренажерами <span>🏋️‍♀️</span></h3>
         <p>Работа с собственным весом и блочными тренажерами на свежем воздухе.</p>
       </div>
 
-      <div class="activity-card" onclick="startWorkout('Кардио и ходьба', 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=800&auto=format&fit=crop')">
+      <div class="activity-card card-yellow" onclick="startWorkout('Кардио и ходьба', 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=800&auto=format&fit=crop')">
         <h3>Быстрая ходьба / Кросс <span>👟</span></h3>
         <p>Аэробная нагрузка на улице для поддержания тонуса и хорошего настроения.</p>
       </div>
@@ -520,7 +549,7 @@
       if (!isTimerRunning) {
         isTimerRunning = true;
         timerBtn.innerText = 'Пауза';
-        timerBtn.style.background = '#e0aaff';
+        timerBtn.style.background = '#dfd7f0';
         timerBtn.style.color = '#4a4a4a';
         finishBtn.style.display = 'block';
 
@@ -678,7 +707,7 @@
           datasets: [{
             label: 'Минуты',
             data: dataPoints,
-            backgroundColor: '#008080',
+            backgroundColor: '#5c8d89',
             borderRadius: 8,
           }]
         },
