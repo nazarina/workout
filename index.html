@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Трекер тренировок</title>
+  <!-- Chart.js для отрисовки графиков -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --soft-pink: #fff0f3;
+      --soft-purple: #f3f0ff;
+      --accent-color: #008080;
+      --deep-accent: #800000;
+      --text-main: #4a4a4a;
+      --white: #ffffff;
+      --overlay-bg: rgba(255, 255, 255, 0.85);
+      --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--soft-pink);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Главный контейнер приложения — строго 1 экран */
+    .app-container {
+      width: 100%;
+      max-width: 430px;
+      height: 100vh;
+      height: 100dvh;
+      background: var(--white);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(0,0,0,0.1);
+    }
+
+    /* Шапка */
+    .header {
+      padding: 16px;
+      text-align: center;
+      background: var(--white);
+      z-index: 10;
+      border-bottom: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .header h1 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--deep-accent);
+    }
+
+    /* Экраны */
+    .screen {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      padding: 16px;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* ЭКРАН 1: Выбор активности */
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--accent-color);
+      margin: 12px 0 8px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .activity-card {
+      background: var(--soft-purple);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+      box-shadow: var(--card-shadow);
+    }
+
+    .activity-card:active {
+      transform: scale(0.98);
+    }
+
+    .activity-card h3 {
+      font-size: 1rem;
+      color: var(--deep-accent);
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .activity-card p {
+      font-size: 0.8rem;
+      color: var(--text-main);
+      line-height: 1.3;
+      opacity: 0.85;
+    }
+
+    /* ЭКРАН 2: Активная тренировка */
+    .workout-screen {
+      background-image: url('https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=800&auto=format&fit=crop');
+      background-size: cover;
+      background-position: center;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .workout-overlay {
+      background: var(--overlay-bg);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      width: 100%;
+      border-radius: 24px;
+      padding: 28px 20px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .workout-title {
+      font-size: 1.3rem;
+      color: var(--deep-accent);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .workout-datetime {
+      font-size: 0.85rem;
+      color: var(--accent-color);
+      margin-bottom: 24px;
+    }
+
+    .timer-display {
+      font-size: 3rem;
+      font-weight: 300;
+      color: var(--text-main);
+      margin: 16px 0 24px 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Кнопки */
+    .btn {
+      border: none;
+      border-radius: 50px;
+      padding: 14px 28px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 100%;
+      max-width: 240px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .btn-start {
+      background: var(--accent-color);
+      color: var(--white);
+    }
+
+    .btn-stop {
+      background: var(--deep-accent);
+      color: var(--white);
+    }
+
+    .btn-secondary {
+      background: var(--soft-purple);
+      color: var(--deep-accent);
+      margin-top: 10px;
+    }
+
+    /* Ниже: ЭКРАН 3 — Отчет и аналитика */
+    .stats-header {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .filter-btn {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid var(--accent-color);
+      background: transparent;
+      color: var(--accent-color);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .filter-btn.active {
+      background: var(--accent-color);
+      color: var(--white);
+    }
+
+    .date-picker-container {
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    .date-picker-container input {
+      width: 100%;
+      padding: 8px;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      font-size: 0.9rem;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 220px;
+      width: 100%;
+      margin-bottom: 16px;
+    }
+
+    .total-time-card {
+      background: var(--soft-pink);
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .total-time-card h4 {
+      font-size: 0.85rem;
+      color: var(--accent-color);
+    }
+
+    .total-time-card p {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--deep-accent);
+    }
+
+    .motivation-box {
+      background: var(--soft-purple);
+      border-left: 4px solid var(--accent-color);
+      border-radius: 0 12px 12px 0;
+      padding: 12px;
+      margin-top: auto;
+    }
+
+    .motivation-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent-color);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .motivation-text {
+      font-size: 0.85rem;
+      font-style: italic;
+      color: var(--text-main);
+    }
+
+    /* Модальное окно результата */
+    .modal {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 24px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .modal h2 {
+      color: var(--deep-accent);
+      margin-bottom: 12px;
+    }
+
+    /* Нижняя навигация */
+    .nav-bar {
+      display: flex;
+      background: var(--white);
+      border-top: 1px solid rgba(0,0,0,0.05);
+      height: 60px;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--text-main);
+      cursor: pointer;
+      opacity: 0.6;
+    }
+
+    .nav-item.active {
+      opacity: 1;
+      color: var(--accent-color);
+      font-weight: 600;
+    }
+
+    .nav-icon {
+      font-size: 1.2rem;
+      margin-bottom: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Шапка -->
+    <div class="header">
+      <h1 id="header-title">Выбор активности</h1>
+    </div>
+
+    <!-- ЭКРАН 1: Выбор активности -->
+    <div id="screen-select" class="screen active">
+      
+      <div class="section-title">Йога и мягкие практики</div>
+
+      <div class="activity-card" onclick="startWorkout('Хатха-йога', 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=800&auto=format&fit=crop')">
+        <h3>Хатха-йога <span>🧘‍♀️</span></h3>
+        <p>Классическая практика: статическое удержание асан, дыхание и мягкая проработка всего тела.</p>
+      </div>
+
+      <div class="activity-card" onclick="startWorkout('Виньяса-флоу', 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=800&auto=format&fit=crop')">
+        <h3>Виньяса-флоу <span>🌊</span></h3>
+        <p>Динамичная йога, где движения плавно связываются с дыханием в единый непрерывный поток.</p>
+      </div>
+
+      <div class="activity-card" onclick="startWorkout('Инь-йога', 'https://images.unsplash.com/photo-1510894347048-471ea1f1006c?q=80&w=800&auto=format&fit=crop')">
+        <h3>Инь-йога <span>🕯️</span></h3>
+        <p>Пассивная расслабляющая практика с долгим удержанием поз для глубокой растяжки и связок.</p>
+      </div>
+
+      <div class="activity-card" onclick="startWorkout('МФР и стретчинг', 'https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=800&auto=format&fit=crop')">
+        <h3>МФР и стретчинг <span>🌸</span></h3>
+        <p>Миофасциальный релиз с роллом и мягкая растяжка для снятия зажимов и усталости.</p>
+      </div>
+
+      <div class="section-title">Уличные тренировки</div>
+
+      <div class="activity-card" onclick="startWorkout('Уличные тренажеры', 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=800&auto=format&fit=crop')">
+        <h3>Площадка с тренажерами <span>🏋️‍♀️</span></h3>
+        <p>Работа с собственным весом и блочными тренажерами на свежем воздухе.</p>
+      </div>
+
+      <div class="activity-card" onclick="startWorkout('Кардио и ходьба', 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=800&auto=format&fit=crop')">
+        <h3>Быстрая ходьба / Кросс <span>👟</span></h3>
+        <p>Аэробная нагрузка на улице для поддержания тонуса и хорошего настроения.</p>
+      </div>
+
+    </div>
+
+    <!-- ЭКРАН 2: Таймер тренировки -->
+    <div id="screen-timer" class="screen workout-screen">
+      <div class="workout-overlay">
+        <div class="workout-title" id="current-workout-name">Хатха-йога</div>
+        <div class="workout-datetime" id="current-workout-date">12 октября, 10:30</div>
+
+        <div class="timer-display" id="timer">00:00</div>
+
+        <button class="btn btn-start" id="timer-btn" onclick="toggleTimer()">Запустить</button>
+        <button class="btn btn-stop" id="finish-btn" style="display: none; margin-top: 12px;" onclick="finishWorkout()">Закончить тренировку</button>
+        <button class="btn btn-secondary" onclick="cancelWorkout()">Отмена</button>
+      </div>
+    </div>
+
+    <!-- ЭКРАН 3: Отчеты и статистика -->
+    <div id="screen-stats" class="screen">
+      
+      <div class="stats-header">
+        <button class="filter-btn active" onclick="setFilter('week', this)">Неделя</button>
+        <button class="filter-btn" onclick="setFilter('month', this)">Месяц</button>
+        <button class="filter-btn" onclick="setFilter('custom', this)">Выбрать дату</button>
+      </div>
+
+      <div class="date-picker-container" id="date-picker-box">
+        <input type="date" id="custom-date-input" onchange="renderStats()">
+      </div>
+
+      <div class="total-time-card">
+        <h4>Всего времени за период</h4>
+        <p id="total-period-time">0 мин</p>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="statsChart"></canvas>
+      </div>
+
+      <div class="motivation-box">
+        <div class="motivation-title">Мотивация на день 💫</div>
+        <div class="motivation-text" id="stats-motivation">Каждая минута, уделенная себе — это вклад в твое спокойствие и красоту.</div>
+      </div>
+
+    </div>
+
+    <!-- Модальное окно после завершения -->
+    <div class="modal" id="result-modal">
+      <div class="modal-content">
+        <h2>Отличная работа! ✨</h2>
+        <p style="margin-bottom: 8px;" id="modal-workout-name">Хатха-йога</p>
+        <p style="font-size: 0.85rem; color: #777;" id="modal-workout-date">12 октября 2026</p>
+        
+        <div style="font-size: 2.2rem; font-weight: 600; color: var(--accent-color); margin: 16px 0;" id="modal-workout-duration">
+          00:00
+        </div>
+
+        <div class="motivation-box" style="margin-bottom: 20px; text-align: left;">
+          <div class="motivation-title">Заботьтесь о себе ❤️</div>
+          <div class="motivation-text" id="modal-motivation-text">Ты сделала еще один шаг к гармонии и здоровью.</div>
+        </div>
+
+        <button class="btn btn-start" onclick="closeModal()">Сохранить и посмотреть отчет</button>
+      </div>
+    </div>
+
+    <!-- Навигация -->
+    <div class="nav-bar">
+      <div class="nav-item active" id="nav-select" onclick="switchScreen('select')">
+        <div class="nav-icon">🧘‍♀️</div>
+        <span>Занятия</span>
+      </div>
+      <div class="nav-item" id="nav-stats" onclick="switchScreen('stats')">
+        <div class="nav-icon">📊</div>
+        <span>Отчеты</span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Данные и состояние
+    let currentWorkout = '';
+    let timerInterval = null;
+    let secondsElapsed = 0;
+    let isTimerRunning = false;
+    let chartInstance = null;
+    let selectedFilter = 'week';
+
+    const quotes = [
+      "Каждая минута, уделенная себе — это вклад в твое спокойствие и красоту.",
+      "Тело благодарит тебя за движение и заботу.",
+      "Слушай себя, дыши глубоко и двигайся в своем темпе.",
+      "Ты делаешь это для своего здоровья и гармонии.",
+      "Сила и мягкость живут в тебе одновременно."
+    ];
+
+    // Выбор экрана
+    function switchScreen(screenName) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+      if(screenName === 'select') {
+        document.getElementById('screen-select').classList.add('active');
+        document.getElementById('nav-select').classList.add('active');
+        document.getElementById('header-title').innerText = 'Выбор активности';
+      } else if(screenName === 'timer') {
+        document.getElementById('screen-timer').classList.add('active');
+        document.getElementById('header-title').innerText = 'Тренировка';
+      } else if(screenName === 'stats') {
+        document.getElementById('screen-stats').classList.add('active');
+        document.getElementById('nav-stats').classList.add('active');
+        document.getElementById('header-title').innerText = 'Моя статистика';
+        renderStats();
+      }
+    }
+
+    // Старт активности
+    function startWorkout(name, bgImage) {
+      currentWorkout = name;
+      document.getElementById('current-workout-name').innerText = name;
+      
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+      document.getElementById('current-workout-date').innerText = dateStr;
+      
+      document.getElementById('screen-timer').style.backgroundImage = `url('${bgImage}')`;
+      
+      resetTimer();
+      switchScreen('timer');
+    }
+
+    // Таймер
+    function toggleTimer() {
+      const timerBtn = document.getElementById('timer-btn');
+      const finishBtn = document.getElementById('finish-btn');
+
+      if (!isTimerRunning) {
+        isTimerRunning = true;
+        timerBtn.innerText = 'Пауза';
+        timerBtn.style.background = '#e0aaff';
+        timerBtn.style.color = '#4a4a4a';
+        finishBtn.style.display = 'block';
+
+        timerInterval = setInterval(() => {
+          secondsElapsed++;
+          updateTimerDisplay();
+        }, 1000);
+      } else {
+        isTimerRunning = false;
+        clearInterval(timerInterval);
+        timerBtn.innerText = 'Продолжить';
+        timerBtn.style.background = 'var(--accent-color)';
+        timerBtn.style.color = 'var(--white)';
+      }
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      isTimerRunning = false;
+      secondsElapsed = 0;
+      updateTimerDisplay();
+      
+      const timerBtn = document.getElementById('timer-btn');
+      timerBtn.innerText = 'Запустить';
+      timerBtn.style.background = 'var(--accent-color)';
+      timerBtn.style.color = 'var(--white)';
+      document.getElementById('finish-btn').style.display = 'none';
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+      const secs = (secondsElapsed % 60).toString().padStart(2, '0');
+      document.getElementById('timer').innerText = `${mins}:${secs}`;
+    }
+
+    function cancelWorkout() {
+      resetTimer();
+      switchScreen('select');
+    }
+
+    // Завершение тренировки
+    function finishWorkout() {
+      clearInterval(timerInterval);
+      
+      const mins = Math.floor(secondsElapsed / 60);
+      const secs = secondsElapsed % 60;
+      const durationStr = `${mins} мин ${secs} сек`;
+      
+      // Сохранение в localStorage
+      saveWorkoutData({
+        title: currentWorkout,
+        durationSeconds: secondsElapsed,
+        date: new Date().toISOString().split('T')[0]
+      });
+
+      // Заполнение модального окна
+      document.getElementById('modal-workout-name').innerText = currentWorkout;
+      document.getElementById('modal-workout-date').innerText = new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+      document.getElementById('modal-workout-duration').innerText = durationStr;
+      
+      const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+      document.getElementById('modal-motivation-text').innerText = randomQuote;
+
+      document.getElementById('result-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('result-modal').style.display = 'none';
+      resetTimer();
+      switchScreen('stats');
+    }
+
+    // Хранилище данных
+    function saveWorkoutData(session) {
+      let history = JSON.parse(localStorage.getItem('workout_history') || '[]');
+      history.push(session);
+      localStorage.setItem('workout_history', JSON.stringify(history));
+    }
+
+    function getWorkoutData() {
+      return JSON.parse(localStorage.getItem('workout_history') || '[]');
+    }
+
+    // Фильтрация и График
+    function setFilter(type, btn) {
+      selectedFilter = type;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const datePicker = document.getElementById('date-picker-box');
+      if (type === 'custom') {
+        datePicker.style.display = 'block';
+      } else {
+        datePicker.style.display = 'none';
+        renderStats();
+      }
+    }
+
+    function renderStats() {
+      const history = getWorkoutData();
+      let labels = [];
+      let dataPoints = [];
+      const today = new Date();
+
+      if (selectedFilter === 'week') {
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date();
+          d.setDate(today.getDate() - i);
+          const dateStr = d.toISOString().split('T')[0];
+          labels.push(d.toLocaleDateString('ru-RU', { weekday: 'short' }));
+          
+          const totalSec = history
+            .filter(item => item.date === dateStr)
+            .reduce((acc, curr) => acc + curr.durationSeconds, 0);
+          dataPoints.push(Math.round(totalSec / 60));
+        }
+      } else if (selectedFilter === 'month') {
+        for (let i = 29; i >= 0; i -= 3) {
+          const d = new Date();
+          d.setDate(today.getDate() - i);
+          const dateStr = d.toISOString().split('T')[0];
+          labels.push(d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'numeric' }));
+          
+          const totalSec = history
+            .filter(item => item.date === dateStr)
+            .reduce((acc, curr) => acc + curr.durationSeconds, 0);
+          dataPoints.push(Math.round(totalSec / 60));
+        }
+      } else if (selectedFilter === 'custom') {
+        const inputVal = document.getElementById('custom-date-input').value;
+        if (inputVal) {
+          labels = [inputVal];
+          const totalSec = history
+            .filter(item => item.date === inputVal)
+            .reduce((acc, curr) => acc + curr.durationSeconds, 0);
+          dataPoints = [Math.round(totalSec / 60)];
+        }
+      }
+
+      // Общее время
+      const totalMinutes = dataPoints.reduce((a, b) => a + b, 0);
+      document.getElementById('total-period-time').innerText = `${totalMinutes} мин`;
+
+      // Мотивационная фраза для экрана статистики
+      document.getElementById('stats-motivation').innerText = quotes[Math.floor(Math.random() * quotes.length)];
+
+      // Рендер Chart.js
+      const ctx = document.getElementById('statsChart').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Минуты',
+            data: dataPoints,
+            backgroundColor: '#008080',
+            borderRadius: 8,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(0,0,0,0.03)' },
+              ticks: { font: { size: 10 } }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 10 } }
+            }
+          }
+        }
+      });
+    }
+
+    // Инициализация
+    window.onload = () => {
+      document.getElementById('custom-date-input').value = new Date().toISOString().split('T')[0];
+    };
+  </script>
+</body>
+</html>
